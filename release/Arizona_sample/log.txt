@@ -1,0 +1,21 @@
+DTALite Log           
+eading input data
+_____________
+Step 1.1: Reading section [demand_period] in setting.csv...
+_____________
+Step 1: Reading input data
+_____________
+number of link types = 0
+Step 1.4: Reading node data in TMC_identification.csv...
+number of nodes = 91
+number of links =432
+number of links =432
+reading 000k TMC data items
+reading 100k TMC data items
+reading 200k TMC data items
+reading 300k TMC data items
+reading 400k TMC data items
+reading 500k TMC data items
+reading 600k TMC data items
+reading data for 72 TMC links.
+writing link_queue_profile.csv..

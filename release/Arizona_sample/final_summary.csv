@@ -1,0 +1,6 @@
+Step 1: read TMC_identification 
+,# of nodes = ,91
+,# of links =,432
+,summary by multi-modal and demand types,demand_period,agent_type,# of links,avg_free_speed,total_length_in_km,total_capacity,avg_lane_capacity,avg_length_in_meter,
+,summary by road link type,link_type,link_type_name,# of links,avg_free_speed,total_length,total_capacity,avg_lane_capacity,avg_length_in_meter,
+,,2,,432,100,404.682,777600,1800,936.765,
