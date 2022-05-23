@@ -353,12 +353,13 @@ void g_read_input_data(Assignment& assignment)
 
 				parser_link.GetValueByFieldName("tmc", link.tmc_code, false);
 
-				parser_link.GetValueByFieldName("road", link.tmc_corridor_name, false);
-				parser_link.GetValueByFieldName("road_order", link.tmc_road_sequence, false);
-
 				link.tmc_corridor_id = 1;
 				link.tmc_road_sequence = 1;
+
+				parser_link.GetValueByFieldName("road", link.tmc_corridor_name, false);
 				parser_link.GetValueByFieldName("tmc_corridor_id", link.tmc_corridor_id, false);
+				parser_link.GetValueByFieldName("road_order", link.tmc_road_order, false);
+				parser_link.GetValueByFieldName("road_sequence", link.tmc_road_sequence, false);
 
 				int link_type = 2;
 
@@ -370,7 +371,6 @@ void g_read_input_data(Assignment& assignment)
 
 				double lane_capacity = 1800;
 				parser_link.GetValueByFieldName("miles", length);  // in meter
-
 			
 				link.free_flow_travel_time_in_min = length/ free_speed * 60;  // link_distance_VDF in meter 
 				float fftt_in_sec = link.free_flow_travel_time_in_min * 60;  // link_distance_VDF in meter 

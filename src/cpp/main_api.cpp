@@ -225,9 +225,7 @@ double network_assignment(int assignment_mode, int column_generation_iterations,
 	// step 1: read input data of network / demand tables / Toll
 	g_read_input_data(assignment);
 
-	if (assignment.assignment_mode == cbi)  // cbi mode
-	{
-		assignment.map_tmc_reading();  // read reading file
+	assignment.map_tmc_reading();  // read reading file
 		g_output_tmc_file();
 		g_output_qvdf_file();
 
@@ -241,25 +239,8 @@ double network_assignment(int assignment_mode, int column_generation_iterations,
 
 		}
 		g_output_dynamic_queue_profile();
-		return 1.0;
-	}
 
-	if (assignment.assignment_mode == 12)  // cbsa mode
-	{
-		//  assignment.map_tmc_reading();  // read reading file
-
-		for (int i = 0; i < g_link_vector.size(); ++i)
-		{
-			// step 1: travel time based on VDF
-			g_link_vector[i].calculate_dynamic_VDFunction(0, false, g_link_vector[i].vdf_type);
-
-		}
-		g_output_tmc_file();
-		g_output_dynamic_queue_profile();
-
-		return 1.0;
-	}
-
+	
 
 	// at the end of simulation 
 	// validation step if reading data are available
