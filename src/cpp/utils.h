@@ -29,10 +29,19 @@ using __int64 = long long;
 constexpr auto _PI = 3.1415926;
 // utilities functions
 
-struct GDPoint //geometry data
+class GDPoint //geometry data
 {
+public:
     double x;
     double y;
+    int node_no;
+    double distance_from_origin;
+
+
+    bool operator<(const GDPoint& other) const
+    {
+        return distance_from_origin < other.distance_from_origin;
+    }
 };
 void g_program_stop();
 void g_program_exit();

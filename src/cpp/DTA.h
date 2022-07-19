@@ -985,6 +985,7 @@ public:
     int node_seq_no;
     int layer_no;
     int MRM_gate_flag;
+    string agent_id;
 
     //external node number
     int node_id;
@@ -1016,16 +1017,97 @@ public:
 
 };
 
-class CTMC_Corridor_Info {
+enum DTA_Direction
+{
+    DTA_NULL = 0,
+    DTA_North,
+    DTA_South,
+    DTA_East,
+    DTA_West,
+};
+
+class CTMC_Corridor_Info 
+{
 public:
     CTMC_Corridor_Info() : total_PMT{ 0 }, total_PHT{ 0 },
         total_PSDT {0 } , 
         lowest_speed{ 9999 }, 
         highest_speed{ -1 },
-        link_count{ 0 }
+        link_count{ 0 },
+        origin_node_no {0},
+        tmc_corridor_id{ 0 }
     {
     }
 
+
+    DTA_Direction m_dir;
+
+    int Find_P2P_Angle(GDPoint p1, GDPoint p2)
+    {
+        float delta_x = p2.x - p1.x;
+        float delta_y = p2.y - p1.y;
+
+        if (fabs(delta_x) < 0.00001)
+            delta_x = 0;
+
+        if (fabs(delta_y) < 0.00001)
+            delta_y = 0;
+
+        int angle = atan2(delta_y, delta_x) * 180 / 3.14159 + 0.5;
+        // angle = 90 - angle;
+
+        while (angle < 0)
+            angle += 360;
+
+        while (angle > 360)
+            angle -= 360;
+
+        return angle;
+
+    }
+
+    bool test_direction_matching(DTA_Direction dir1, DTA_Direction dir2)
+    {
+        if (dir1 == DTA_North && dir2 == DTA_South)
+            return 0;
+  
+        if (dir2 == DTA_North && dir1 == DTA_South)
+            return 0;
+
+        if (dir1 == DTA_East && dir2 == DTA_West)
+            return 0;
+
+        if (dir2 == DTA_East && dir1 == DTA_West)
+            return 0;
+
+        return 1;
+    }
+    
+    DTA_Direction Find_Closest_Angle_to_Approach(int angle)
+    {
+        if (angle < 45)
+        {
+            return DTA_North;
+        }
+        else if (angle < 45 + 90)
+        {
+            return  DTA_East;
+        }
+        else if (angle < 225)
+        {
+            return DTA_South;
+        }
+        else if (angle < 315)
+        {
+            return DTA_South;
+        }
+        else
+        {
+            return DTA_North;
+        }
+    }
+
+    int tmc_corridor_id;
     void reset()
     {
         total_PMT = 0;
@@ -1051,6 +1133,77 @@ public:
     int link_count;
 
     std::map<int, int> road_sequence_map;
+    std::vector <int> node_no_vector;
+    std::vector <GDPoint> point_vector;
+    int origin_node_no;
+
+    GDPoint center;
+    void find_center_and_origin()
+    {
+        // first stage: find center
+        double x = 0;
+        double y = 0;
+        for (int k = 0; k < point_vector.size(); k++)
+        {
+            x += point_vector[k].x;
+            y += point_vector[k].y;
+        }
+
+        center.x = x / max(1, point_vector.size());
+        center.y = y / max(1, point_vector.size());
+
+
+        // second stage: find origin
+
+        double longest_distance_from_center = 0;
+
+        GDPoint origin;
+        origin.x = 0;
+        origin.y = 0;
+
+        int origin_node_k = -1;
+        for (int k = 0; k < point_vector.size(); k++)
+        {
+            double local_distance_from_ceter = 999999;
+
+            if (m_dir != DTA_NULL)  // d
+            {
+                DTA_Direction dir1 = Find_Closest_Angle_to_Approach(Find_P2P_Angle(point_vector[k], center));
+                
+                if(test_direction_matching(dir1, m_dir))
+                {
+                local_distance_from_ceter = pow(pow(point_vector[k].x - center.x, 2) + pow(point_vector[k].y - center.y, 2), 0.5);
+
+
+                    if (local_distance_from_ceter > longest_distance_from_center)
+                    {
+                        longest_distance_from_center = local_distance_from_ceter;  // reset 
+                        origin_node_no = node_no_vector[k];
+                        origin_node_k = k;
+                        origin.x = point_vector[k].x;
+                        origin.y = point_vector[k].y;
+                    }
+                }
+
+            }
+        }
+
+        // third stage: compute the distance from origin for each node
+
+        for (int k = 0; k < point_vector.size(); k++)
+        {
+            double local_distance_from_origin = pow(pow(point_vector[k].x - origin.x, 2) + pow(point_vector[k].y - origin.y, 2), 0.5);
+            point_vector[k].distance_from_origin = local_distance_from_origin;
+        }
+
+
+        // forth stage: sort the point vector according the distance 
+        std::sort(point_vector.begin(), point_vector.end());
+
+
+    }
+
+
 
 };
 

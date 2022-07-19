@@ -4,7 +4,7 @@
 
 using std::string;
 
-struct GDPoint;
+class GDPoint;
 
 
 class CGeometry
@@ -35,5 +35,3 @@ public:
 
 
 
-
- 

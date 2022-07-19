@@ -192,13 +192,54 @@ void g_read_input_data(Assignment& assignment)
 
 				parser.GetValueByFieldName("end_longitude", end_longitude);
 				parser.GetValueByFieldName("end_latitude", end_latitude);
+				
+				string direction;
+				parser.GetValueByFieldName("direction", direction);
 
+				DTA_Direction dir = DTA_NULL;
+
+				if (direction == "N")
+				{
+					dir = DTA_North;
+				}
+				if (direction == "E")
+				{
+					dir = DTA_East;
+				}
+				if (direction == "S")
+				{
+					dir = DTA_South;
+				}
+				if (direction == "W")
+				{
+					dir = DTA_West;
+				}
+
+
+				string tmc_corridor_name;
+				parser.GetValueByFieldName("tmc_corridor_name", tmc_corridor_name, false);
 
 				string long_lat_string_from;
 				long_lat_string_from = start_longitude + "_" + start_latitude;
 
 				string long_lat_string_to;
 				long_lat_string_to = end_longitude + "_" + end_latitude;
+
+				
+				CTMC_Corridor_Info corridor;
+
+				if (g_tmc_corridor_vector.find(tmc_corridor_name) == g_tmc_corridor_vector.end())
+				{
+					corridor.tmc_corridor_id = g_tmc_corridor_vector.size() + 1;
+					corridor.m_dir = dir;
+					g_tmc_corridor_vector[tmc_corridor_name] = corridor;
+
+
+					//establish the corridor 
+				}
+				
+
+					
 
 
 				if (long_lat_string_to_node_id_mapping.find(long_lat_string_from) == long_lat_string_to_node_id_mapping.end())
@@ -216,9 +257,18 @@ void g_read_input_data(Assignment& assignment)
 					node.node_seq_no = internal_node_seq_no;
 					node.x = x_coord_from;
 					node.y = y_coord_from;
-					internal_node_seq_no++;
+					node.agent_id = tmc_corridor_name;
 					// push it to the global node vector
 					g_node_vector.push_back(node);
+					
+					g_tmc_corridor_vector[tmc_corridor_name].node_no_vector.push_back(internal_node_seq_no);
+					pt.node_no = node.node_seq_no;
+					g_tmc_corridor_vector[tmc_corridor_name].point_vector.push_back(pt);
+
+					internal_node_seq_no++;
+
+					
+
 					assignment.g_number_of_nodes++;
 				}
 
@@ -236,10 +286,14 @@ void g_read_input_data(Assignment& assignment)
 					node.node_seq_no = internal_node_seq_no;
 					node.x = x_coord_to;
 					node.y = y_coord_to;
-					internal_node_seq_no++;
+					node.agent_id = tmc_corridor_name;
 					// push it to the global node vector
 					g_node_vector.push_back(node);
+					g_tmc_corridor_vector[tmc_corridor_name].node_no_vector.push_back(internal_node_seq_no);
+					pt.node_no = node.node_seq_no;
+					g_tmc_corridor_vector[tmc_corridor_name].point_vector.push_back(pt);
 					assignment.g_number_of_nodes++;
+					internal_node_seq_no++;
 				}
 
 				if (assignment.g_number_of_nodes % 5000 == 0)
@@ -353,13 +407,18 @@ void g_read_input_data(Assignment& assignment)
 
 				parser_link.GetValueByFieldName("tmc", link.tmc_code, false);
 
-				link.tmc_corridor_id = 1;
 				link.tmc_road_sequence = 1;
 
-				parser_link.GetValueByFieldName("road", link.tmc_corridor_name, false);
-				parser_link.GetValueByFieldName("tmc_corridor_id", link.tmc_corridor_id, false);
-				parser_link.GetValueByFieldName("road_order", link.tmc_road_order, false);
-				parser_link.GetValueByFieldName("road_sequence", link.tmc_road_sequence, false);
+
+				parser_link.GetValueByFieldName("tmc_corridor_name", link.tmc_corridor_name, false);
+				parser_link.GetValueByFieldName("corridor_link_sequence", link.tmc_road_sequence,false);
+
+				if (g_tmc_corridor_vector.find(link.tmc_corridor_name) != g_tmc_corridor_vector.end())
+				{
+					link.tmc_corridor_id = g_tmc_corridor_vector[link.tmc_corridor_name].tmc_corridor_id;
+
+					//establish the corridor 
+				}
 
 				int link_type = 2;
 

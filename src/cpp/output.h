@@ -319,45 +319,60 @@ void g_output_dynamic_queue_profile()  // generated from VDF, from numerical que
 
 void g_OutputModelFiles()
 {
-		FILE* g_pFileModelNode = fopen("node.csv", "w");
+
+		FILE* g_pFileModelNode = fopen("TMC_node.csv", "w");
 
 		if (g_pFileModelNode != NULL)
 		{
-			fprintf(g_pFileModelNode, "node_id,node_no,layer_no,MRM_gate_flag,node_type,is_boundary,#_of_outgoing_nodes,activity_node_flag,agent_type,zone_id,cell_code,info_zone_flag,x_coord,y_coord\n");
-			for (int i = 0; i < g_node_vector.size(); i++)
+			fprintf(g_pFileModelNode, "node_id,node_no,layer_no,agent_id,sequence_no,distance_from_origin,MRM_gate_flag,node_type,is_boundary,#_of_outgoing_nodes,activity_node_flag,agent_type,zone_id,cell_code,info_zone_flag,x_coord,y_coord\n");
+
+			std::map<string, CTMC_Corridor_Info>::iterator it;
+
+			for (it = g_tmc_corridor_vector.begin(); it != g_tmc_corridor_vector.end(); ++it)  // first loop: corridor
 			{
+				it->second.find_center_and_origin();
 
+				if (it->second.point_vector.size() <= 5)
+					continue;
 
-				if (g_node_vector[i].node_id >= 0)  //for all physical links
+				for (int k = 0; k < it->second.point_vector.size(); k++)
 				{
 
-					fprintf(g_pFileModelNode, "%d,%d,%d,%d,%s,%d,%d,%d,%s, %ld,%s,%d,%f,%f\n",
-						g_node_vector[i].node_id,
-						g_node_vector[i].node_seq_no,
-						g_node_vector[i].layer_no,
-						g_node_vector[i].MRM_gate_flag,
-						g_node_vector[i].node_type.c_str(),
-						g_node_vector[i].is_boundary,
-						g_node_vector[i].m_outgoing_link_seq_no_vector.size(),
-						g_node_vector[i].is_activity_node,
-						g_node_vector[i].agent_type_str.c_str(),
+					int i = it->second.point_vector[k].node_no;
 
-						g_node_vector[i].zone_org_id,
-						g_node_vector[i].cell_str.c_str(),
-						0,
-						g_node_vector[i].x,
-						g_node_vector[i].y
-					);
+					if (g_node_vector[i].node_id >= 0)  //for all physical links
+					{
+
+						fprintf(g_pFileModelNode, "%d,%d,%d,%s,%d,%f,%d,%s,%d,%d,%d,%s, %ld,%s,%d,%f,%f\n",
+							g_node_vector[i].node_id,
+							g_node_vector[i].node_seq_no,
+							g_node_vector[i].layer_no,
+							g_node_vector[i].agent_id.c_str(),
+							k,
+							it->second.point_vector[k].distance_from_origin,
+							g_node_vector[i].MRM_gate_flag,
+							g_node_vector[i].node_type.c_str(),
+							g_node_vector[i].is_boundary,
+							g_node_vector[i].m_outgoing_link_seq_no_vector.size(),
+							g_node_vector[i].is_activity_node,
+							g_node_vector[i].agent_type_str.c_str(),
+
+							g_node_vector[i].zone_org_id,
+							g_node_vector[i].cell_str.c_str(),
+							0,
+							g_node_vector[i].x,
+							g_node_vector[i].y
+						);
+
+					}
 
 				}
-
 			}
-
-			fclose(g_pFileModelNode);
+					fclose(g_pFileModelNode);
 		}
 		else
 		{
-			dtalog.output() << "Error: File node.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
+			dtalog.output() << "Error: File TMC_node.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
 			g_program_stop();
 
 
@@ -365,7 +380,7 @@ void g_OutputModelFiles()
 
 	
 
-		FILE* g_pFileModelLink = fopen("link.csv", "w");
+		FILE* g_pFileModelLink = fopen("TMC_link.csv", "w");
 
 		if (g_pFileModelLink != NULL)
 		{
@@ -432,10 +447,46 @@ void g_OutputModelFiles()
 		}
 		else
 		{
-			dtalog.output() << "Error: File link.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
+			dtalog.output() << "Error: File TMC_link.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
 			g_program_stop();
 
 		}
+
+
+		/// <summary>
+		/// / trace.csv for each corridor
+		/// </summary>
+
+		//FILE* g_pFileModelTrace = fopen("trace.csv", "w");
+
+		//if (g_pFileModelTrace != NULL)
+		//{
+		//	fprintf(g_pFileModelTrace, "trace_id,agent_id,x_coord,y_coord\n");
+		//	for (int i = 0; i < g_node_vector.size(); i++)
+		//	{
+
+
+		//		if (g_node_vector[i].node_id >= 0)  //for all physical links
+		//		{
+
+		//			fprintf(g_pFileModelNode, "%d,%d,%d,%d,%s,%d,%d,%d,%s, %ld,%s,%d,%f,%f\n",
+		//				g_node_vector[i].x,
+		//				g_node_vector[i].y
+		//			);
+
+		//		}
+
+		//	}
+
+		//	fclose(g_pFileModelTrace);
+		//}
+		//else
+		//{
+		//	dtalog.output() << "Error: File trace.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
+		//	g_program_stop();
+
+
+		//}
 
 	
 }

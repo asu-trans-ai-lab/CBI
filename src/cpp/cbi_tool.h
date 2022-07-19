@@ -715,9 +715,14 @@ bool Assignment::map_tmc_reading()
             float global_time;
             int day_of_week_flag = 0;
             int day_of_year = 0;
-
+            int length_of_measurement_tstamp= measurement_tstamp.size();
             if (measurement_tstamp.size() < 18)
-                continue; // skip empty lines 
+            {
+                dtalog.output() << "reading data for measurement_tstamp = " << measurement_tstamp << ", length of string = " << length_of_measurement_tstamp << endl;
+                dtalog.output() << "Please use standard ISO 8601 date and time format 2022-05-23T22:00:23, length of string = 18" << endl;
+                
+                g_program_stop();
+            }
 
             global_time = g_measurement_tstamp_parser(measurement_tstamp, day_of_week_flag, day_of_year);
 
