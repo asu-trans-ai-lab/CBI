@@ -112,6 +112,8 @@ public:
         
         FD_vcutoff = highest_speed * 0.7;
         free_speed = highest_speed;
+
+
         return FD_vcutoff / max(1.0f, free_speed) * highest_speed;  // return the final cutoff speed
     }
 
@@ -321,11 +323,11 @@ public:
 
         if (b_t0_found_flag == false || b_t3_found_flag == false)  // two boundaries are not found or P < 1;
         {
-            //uncongested states
 
-            // consider peak hour
+            {            // consider peak hour
             obs_t0_in_interval = t_mid - 60 / 2 / 5;  // - 30 min
             obs_t3_in_interval = t_mid + 60 / 2 / 5;  //+ 30 min
+            }
 
 
             obs_P_in_hour = 0;  // no compromise 
@@ -998,6 +1000,12 @@ void g_output_tmc_file()
                 //    int idebug = 1;
                 //}
                 float updated_vc = g_TMC_vector[tmc_index].scan_highest_speed_and_vc(p_link->v_congestion_cutoff, p_link->free_speed, highest_speed);
+
+                for (int time_index = 0; time_index < MAX_TIMEINTERVAL_PerDay; time_index++)
+                {
+                    p_link->model_speed[time_index] = p_link->free_speed;
+                }
+
                 p_link->v_congestion_cutoff = updated_vc;
                 p_link->update_kc(free_speed);
                 fprintf(p_file_tmc_link, "%f,%f,%f,", highest_speed, p_link->v_congestion_cutoff, p_link->v_congestion_cutoff / max(1.0f, highest_speed));
@@ -1401,6 +1409,12 @@ void g_output_qvdf_file()
 
 
                 float updated_vc = g_TMC_vector[tmc_index].scan_highest_speed_and_vc(p_link->v_congestion_cutoff, p_link->free_speed, highest_speed);
+
+                for (int time_index = 0; time_index < MAX_TIMEINTERVAL_PerDay; time_index++)
+                {
+                    p_link->model_speed[time_index] = p_link->free_speed;
+                }
+
                 p_link->v_congestion_cutoff = updated_vc;
                 p_link->update_kc(free_speed);
 
