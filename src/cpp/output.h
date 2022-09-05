@@ -417,7 +417,7 @@ void g_OutputModelFiles()
 					g_link_vector[i].VDF_period[0].alpha,
 					g_link_vector[i].VDF_period[0].beta,
 
-					g_link_vector[i].VDF_period[0].queue_demand_factor,
+					g_link_vector[i].VDF_period[0].peak_load_factor,
 					g_link_vector[i].VDF_period[0].Q_alpha,
 					g_link_vector[i].VDF_period[0].Q_beta,
 					g_link_vector[i].VDF_period[0].Q_cd,

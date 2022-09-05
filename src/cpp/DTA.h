@@ -500,7 +500,7 @@ class CLink
 {
 public:
     // construction
-    CLink() :main_node_id{ -1 }, free_speed{ 100 }, v_congestion_cutoff{ 100 }, v_critical { 60 },
+    CLink() :main_node_id{ -1 }, free_speed{ 70 }, v_congestion_cutoff{ 49 }, v_critical { 49 },
         length_in_meter{ 1 }, link_distance_VDF {0.001}, 
         BWTT_in_simulation_interval{ 100 }, zone_seq_no_for_outgoing_connector{ -1 }, number_of_lanes{ 1 }, lane_capacity{ 1999 },
          free_flow_travel_time_in_min{ 0.01 }, link_spatial_capacity{ 100 }, 
@@ -868,7 +868,7 @@ public:
 
         if (VDF_period_sum[tau].vdf_data_count == 0)
         {
-            VDF_period_sum[tau].queue_demand_factor = element.queue_demand_factor;
+            VDF_period_sum[tau].peak_load_factor = element.peak_load_factor;
             VDF_period_sum[tau].Q_alpha = element.Q_alpha;
             VDF_period_sum[tau].Q_beta = element.Q_beta;
             VDF_period_sum[tau].Q_cp = element.Q_cp;
@@ -878,7 +878,7 @@ public:
         }
         else
         {
-            VDF_period_sum[tau].queue_demand_factor += element.queue_demand_factor;
+            VDF_period_sum[tau].peak_load_factor += element.peak_load_factor;
             VDF_period_sum[tau].Q_alpha +=  element.Q_alpha;
             VDF_period_sum[tau].Q_beta +=  element.Q_beta;
             VDF_period_sum[tau].Q_cp += element.Q_cp;
@@ -896,7 +896,7 @@ public:
         float count = VDF_period_sum[tau].vdf_data_count;
         if(count>=1)
         {
-        VDF_period_sum[tau].queue_demand_factor /= count;
+        VDF_period_sum[tau].peak_load_factor /= count;
         VDF_period_sum[tau].Q_alpha /= count;
         VDF_period_sum[tau].Q_beta /= count;
         VDF_period_sum[tau].Q_cp /= count;

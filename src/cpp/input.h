@@ -467,7 +467,7 @@ void g_read_input_data(Assignment& assignment)
 					link.VDF_period[tau].nlanes = 1;
 
 					link.VDF_period[tau].FFTT = link.link_distance_VDF / max(0.0001, link.free_speed) * 60.0;  // 60.0 for 60 min per hour
-					link.VDF_period[tau].BPR_period_capacity = link.lane_capacity * link.number_of_lanes;
+					link.v_congestion_cutoff = 0.7 * link.free_speed;
 					link.VDF_period[tau].vf = link.free_speed;
 					link.VDF_period[tau].v_congestion_cutoff = link.v_congestion_cutoff;
 					link.VDF_period[tau].alpha = 0.15;
