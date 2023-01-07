@@ -1,0 +1,35 @@
+agent_type_blocklist:
+  0: .nan
+  1: .nan
+  2: .nan
+  3: .nan
+  4: .nan
+  5: .nan
+link_type:
+  0: 1
+  1: 3
+  2: 4
+  3: 5
+  4: 6
+  5: 11
+link_type_name:
+  0: motorway
+  1: primary
+  2: residential
+  3: secondary
+  4: tertiary
+  5: unclassified
+traffic_flow_code:
+  0: 2
+  1: 2
+  2: 2
+  3: 2
+  4: 2
+  5: 2
+type_code:
+  0: f
+  1: a
+  2: a
+  3: a
+  4: a
+  5: a
