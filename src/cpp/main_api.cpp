@@ -48,6 +48,22 @@ using std::ifstream;
 using std::ofstream;
 using std::istringstream;
 
+std::ofstream g_summary_file;
+
+void g_program_stop()
+{
+	cout << "DTALite Program stops. Press any key to terminate. Thanks!" << endl;
+	getchar();
+	exit(0);
+}
+
+void g_program_exit()
+{
+	cout << "DTALite Program completes. Thanks!" << endl;
+
+	exit(0);
+}
+
 
 __int64 g_get_cell_ID(double x, double y, double grid_resolution)
 {
@@ -206,6 +222,7 @@ void  CLink::calculate_dynamic_VDFunction(int inner_iteration_number, bool conge
 
 double network_assignment(int assignment_mode, int column_generation_iterations, int column_updating_iterations, int ODME_iterations, int sensitivity_analysis_iterations, int simulation_iterations, int number_of_memory_blocks)
 {
+	g_summary_file.open("summary.csv");
 	clock_t start_t0, end_t0, total_t0;
 	int signal_updating_iterations = 0;
 	start_t0 = clock();
@@ -260,11 +277,11 @@ double network_assignment(int assignment_mode, int column_generation_iterations,
 	//    g_output_dynamic_queue_profile();
 		//
 
-	dtalog.output() << "Output for assignment with " << assignment.g_number_of_column_generation_iterations << " iterations. Traffic assignment completes!" << endl;
+	cout<< "Output for assignment with " << assignment.g_number_of_column_generation_iterations << " iterations. Traffic assignment completes!" << endl;
 
-	dtalog.output() << "free memory.." << endl;
+	cout<< "free memory.." << endl;
 
-
+	g_summary_file.close();
 	return 1;
 }
 

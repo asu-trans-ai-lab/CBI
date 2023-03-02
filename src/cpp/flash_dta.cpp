@@ -24,7 +24,7 @@ using namespace std;
 int main()
 {
 	// reset all the log files to defult 0: not output; if want to output these logs set to 1
-	dtalog.output() << "DTALite Log" << std::fixed << std::setw(12) << '\n';
+	cout<< "DTALite Log" << std::fixed << std::setw(12) << '\n';
 	dtalog.debug_level() = 0;
 	dtalog.log_sig() = 0;
 	dtalog.log_odme() = 0;

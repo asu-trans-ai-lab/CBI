@@ -104,7 +104,7 @@ void g_OutputSummaryFiles(Assignment& assignment)
 
 void g_output_dynamic_queue_profile()  // generated from VDF, from numerical queue evolution calculation
 {
-	dtalog.output() << "writing link_queue_profile.csv.." << endl;
+	cout<< "writing link_queue_profile.csv.." << endl;
 
 	int b_debug_detail_flag = 0;
 	FILE* g_pFileLinkMOE = nullptr;
@@ -115,7 +115,7 @@ void g_output_dynamic_queue_profile()  // generated from VDF, from numerical que
 
 	if (!g_pFileLinkMOE)
 	{
-		dtalog.output() << "File " << file_name.c_str() << " cannot be opened." << endl;
+		cout<< "File " << file_name.c_str() << " cannot be opened." << endl;
 		g_program_stop();
 	}
 	else
@@ -320,7 +320,7 @@ void g_output_dynamic_queue_profile()  // generated from VDF, from numerical que
 void g_OutputModelFiles()
 {
 
-		FILE* g_pFileModelNode = fopen("TMC_node.csv", "w");
+		FILE* g_pFileModelNode = fopen("node.csv", "w");
 
 		if (g_pFileModelNode != NULL)
 		{
@@ -372,7 +372,7 @@ void g_OutputModelFiles()
 		}
 		else
 		{
-			dtalog.output() << "Error: File TMC_node.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
+			cout<< "Error: File node.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
 			g_program_stop();
 
 
@@ -380,12 +380,12 @@ void g_OutputModelFiles()
 
 	
 
-		FILE* g_pFileModelLink = fopen("TMC_link.csv", "w");
+		FILE* g_pFileModelLink = fopen("link.csv", "w");
 
 		if (g_pFileModelLink != NULL)
 		{
 			fprintf(g_pFileModelLink, "link_id,link_no,layer_no,from_node_id,to_node_id,from_gate_flag,to_gate_flag,link_type,link_type_name,lanes,link_distance_VDF,free_speed,cutoff_speed,fftt,capacity,allow_uses,");
-			fprintf(g_pFileModelLink, "BPR_plf,BPR_alpha,BPR_beta,QVDF_qdf,QVDF_alpha,QVDF_beta,QVDF_cd,QVDF_n,");
+			fprintf(g_pFileModelLink, "BPR_plf,BPR_alpha,BPR_beta,QVDF_plf,QVDF_alpha,QVDF_beta,QVDF_cd,QVDF_n,");
 			fprintf(g_pFileModelLink, "geometry\n");
 
 			//VDF_fftt1,VDF_cap1,VDF_alpha1,VDF_beta1
@@ -447,7 +447,7 @@ void g_OutputModelFiles()
 		}
 		else
 		{
-			dtalog.output() << "Error: File TMC_link.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
+			cout<< "Error: File ink.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
 			g_program_stop();
 
 		}
@@ -482,7 +482,7 @@ void g_OutputModelFiles()
 		//}
 		//else
 		//{
-		//	dtalog.output() << "Error: File trace.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
+		//	cout<< "Error: File trace.csv cannot be opened.\n It might be currently used and locked by EXCEL." << endl;
 		//	g_program_stop();
 
 

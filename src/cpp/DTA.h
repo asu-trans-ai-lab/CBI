@@ -54,7 +54,7 @@ extern void g_OutputModelFiles();
 
 class CDemand_Period {
 public:
-    CDemand_Period() : demand_period_id { 0 }, demand_period { 0 }, starting_time_slot_no{ 0 }, ending_time_slot_no{ 0 }, t2_peak_in_hour{ 0 }, time_period_in_hour{ 1 }, number_of_demand_files{ 0 }
+    CDemand_Period() : demand_period_id{ 0 }, demand_period{ 0 }, starting_time_slot_no{ 0 }, ending_time_slot_no{ 0 }, t2_peak_in_hour{ 0 }, time_period_in_hour{ 1 }, number_of_demand_files{ 0 }, default_plf{ 1 }
     {
     }
 
@@ -71,6 +71,7 @@ public:
     std::string time_period;
     int number_of_demand_files;
     int demand_period_id;
+    float default_plf;
 };
 
 extern double g_get_random_ratio();
@@ -111,12 +112,12 @@ public:
             int hour = s / 12;
             int minute = s * 5 - hour * 60;
          
-            dtalog.output() << std::setprecision(5) << "cumulative profile no. " << departure_time_profile_no << ", ratio at slot  " << s << " (" << hour << ":" << minute << ") = " << 
+            cout<< std::setprecision(5) << "cumulative profile no. " << departure_time_profile_no << ", ratio at slot  " << s << " (" << hour << ":" << minute << ") = " << 
                 departure_time_ratio[s] << ",CR " << 
                 cumulative_departure_time_ratio[s] << std::endl;
         }
 
-       dtalog.output() << std::setprecision(5) << "final cumulative profile ratio = " << cumulative_departure_time_ratio[ending_slot_no - 1] << std::endl;
+       cout<< std::setprecision(5) << "final cumulative profile ratio = " << cumulative_departure_time_ratio[ending_slot_no - 1] << std::endl;
     }
 
     int get_time_slot_no(int agent_seq_no, int agent_size)
@@ -134,14 +135,14 @@ public:
             {
                 int hour = s / 12;
                 int minute = s * 5 - hour * 60;
-//                dtalog.output() << "s=" << s <<" (" << hour << ":" << minute << ") = "  << ending_time_slot_no << std::endl;
+//                cout<< "s=" << s <<" (" << hour << ":" << minute << ") = "  << ending_time_slot_no << std::endl;
 
                 return s;
             }
         }
         int hour = starting_time_slot_no / 12;
         int minute = starting_time_slot_no * 5 - hour * 60;
-//        dtalog.output() << "s=" << starting_time_slot_no << " (" << hour << ":" << minute << ") = " << ending_time_slot_no << std::endl;
+//        cout<< "s=" << starting_time_slot_no << " (" << hour << ":" << minute << ") = " << ending_time_slot_no << std::endl;
         return starting_time_slot_no;  // first time slot as the default value
     }
 
@@ -160,7 +161,7 @@ public:
             int minute = (int)(( s*1.0 /12 - hour) * 60 + 0.5);
             if(idebug)
             {
-            dtalog.output() << "s=" << s << " (" << hour << ":" << minute << ") = " << cumulative_departure_time_ratio[s] << std::endl;
+            cout<< "s=" << s << " (" << hour << ":" << minute << ") = " << cumulative_departure_time_ratio[s] << std::endl;
             }
             if (r < cumulative_departure_time_ratio[s])
             {
@@ -171,7 +172,7 @@ public:
                 double time_in_min = (s- starting_time_slot_no + floating_point )* MIN_PER_TIMESLOT;
                 if (idebug)
                 { 
-                    dtalog.output() << "select: s=" << s << " (" << hour << ":" << minute << ") = " << ending_time_slot_no << ", dep_time = " << time_in_min <<"," << std::endl;
+                    cout<< "select: s=" << s << " (" << hour << ":" << minute << ") = " << ending_time_slot_no << ", dep_time = " << time_in_min <<"," << std::endl;
                 }
                 return time_in_min;
             }
@@ -182,7 +183,7 @@ public:
             int hour = starting_time_slot_no / 12;
             int minute = starting_time_slot_no * 5 - hour * 60;
 
-            dtalog.output() << "s=" << starting_time_slot_no << " (" << hour << ":" << minute << ") = " << ending_time_slot_no << std::endl;
+            cout<< "s=" << starting_time_slot_no << " (" << hour << ":" << minute << ") = " << ending_time_slot_no << std::endl;
         }
         return (r) * MIN_PER_TIMESLOT  ;  // first time slot as the default value
     }
@@ -339,7 +340,7 @@ public:
         summary_file.open("final_summary.csv", std::fstream::out);
         if (!summary_file.is_open())
         {
-            dtalog.output() << "File final_summary.csv cannot be open.";
+            cout<< "File final_summary.csv cannot be open.";
             g_program_stop();
         }
         summary_corridor_file.open("corridor_performance.csv", std::fstream::out);

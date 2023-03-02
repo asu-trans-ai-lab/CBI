@@ -54,7 +54,7 @@ using std::ofstream;
 class CPeriod_VDF
 {
 public:
-    CPeriod_VDF() : vdf_type{ q_vdf }, vdf_data_count{ 0 }, Q_cd{ 0.954946463 }, Q_n{ 1.141574427 }, Q_cp{ 0.400089684 }, Q_s{ 4 }, vf{ 60 }, v_congestion_cutoff{ 45 }, FFTT{ 1 }, peak_load_factor{ 1 }, DOC{ 0 }, VOC{ 0 }, vt2{ -1 },
+    CPeriod_VDF() : vdf_type{ q_vdf }, vdf_data_count{ 0 }, Q_fd{ 0.954946463 }, Q_n{ 1.141574427 }, Q_fp{ 0.400089684 }, Q_s{ 4 }, vf{ 60 }, v_congestion_cutoff{ 45 }, FFTT{ 1 }, peak_load_factor{ 1 }, DOC{ 0 }, VOC{ 0 }, vt2{ -1 },
         alpha{ 0.39999993}, beta{ 4 }, Q_alpha{ 0.272876961}, Q_beta{ 4}, rho{ 1 }, preload{ 0 }, penalty{ 0 }, sa_lanes_change{ 0 }, LR_price{ 0 }, LR_RT_price{ 0 }, starting_time_in_hour{ 0 }, ending_time_in_hour{ 0 },
         cycle_length{ -1 }, red_time{ 0 }, effective_green_time{ 0 }, saturation_flow_rate{ _default_saturation_flow_rate }, t0{ -1 }, t3{ -1 }, start_green_time{ -1 }, end_green_time{ -1 }, L{ 1 },
         queue_length{ 0 }, obs_count{ 0 }, upper_bound_flag{ 1 }, est_count_dev{ 0 }, avg_waiting_time{ 0 }, P{ -1 }, Severe_Congestion_P{ -1 }, lane_based_D{ 0 }, lane_based_Vph{ 0 }, avg_speed_BPR{ -1 }, avg_queue_speed{ -1 }, nlanes{ 1 }, sa_volume{ 0 }, t2{ 1 }, k_critical{ 45 }, link_volume {0},
@@ -142,6 +142,12 @@ public:
 
              // step 1: calculate lane_based D based on plf and nlanes from link volume V over the analysis period  take nonnegative values
             lane_based_D = max(0.0, volume) /max(0.000001, nlanes) /L/ peak_load_factor ;
+
+            if (lane_based_D > volume)
+            {
+                lane_based_D = volume; // D cannot be higher than V
+            }
+
             // step 2: D_ C ratio based on lane-based D and lane-based ultimate hourly capacity, 
             // uncongested states D <C 
             // congested states D > C, leading to P > 1
@@ -213,9 +219,9 @@ public:
 //            vt2 = avg_queue_speed * 8.0 / 15.0;  // 8/15 is a strong assumption 
 
 
-            P = Q_cd * pow(DOC, Q_n_current_value);  // applifed for both uncongested and congested conditions
+            P = Q_fd * pow(DOC, Q_n_current_value);  // applifed for both uncongested and congested conditions
 
-            double base = Q_cp*pow(P, Q_s) + 1.0;
+            double base = Q_fp*pow(P, Q_s) + 1.0;
             vt2 = v_congestion_cutoff / max(0.001, base);
             //step 4.1: compute congestion duration P
             
@@ -227,7 +233,7 @@ public:
                    nonpeak_hourly_flow = (volume * (1- peak_load_factor)) / max(1.0, nlanes) / max(0.1, min(L-1, L - P - 5.0/60.0));  //5.0/60.0 as one 5 min interval, as P includes both boundary points
                }
 
-           //           dtalog.output() << "nonpeak_hourly_flow = " << nonpeak_hourly_flow << endl;
+           //           cout<< "nonpeak_hourly_flow = " << nonpeak_hourly_flow << endl;
 
            // setup the upper bound on nonpeak flow rates
            if (nonpeak_hourly_flow > lane_based_ultimate_hourly_capacity)
@@ -373,11 +379,13 @@ public:
     double alpha;
     double beta;
 
+    double Q_cp;
+    double Q_cd;
 
     double Q_alpha;
     double Q_beta;
-    double Q_cd;
-    double Q_cp;
+    double Q_fd;
+    double Q_fp;
     double Q_n;
     double Q_s;
     double Q_mu;

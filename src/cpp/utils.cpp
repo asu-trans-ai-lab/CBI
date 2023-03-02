@@ -28,6 +28,11 @@ using std::ofstream;
 using std::istringstream;
 using std::ostringstream;
 
+using std::ifstream;
+using std::ofstream;
+using std::istringstream;
+
+
 using std::asin;
 using std::sin;
 using std::cos;
@@ -36,19 +41,6 @@ using std::sqrt;
 using std::min;
 using std::fmin;
 
-void g_program_stop()
-{
-    dtalog.output() << "DTALite Program stops. Press any key to terminate. Thanks!" << endl;
-    getchar();
-    exit(0);
-}
-
-void g_program_exit()
-{
-    dtalog.output() << "DTALite Program completes. Thanks!" << endl;
-
-    exit(0);
-}
 
 
 void fopen_ss(FILE** file, const char* fileName, const char* mode)
@@ -484,7 +476,7 @@ bool CCSVParser::OpenCSVFile(string fileName, bool b_required)
     {
         if (b_required)
         {
-            dtalog.output() << "File " << fileName << " does not exist. Please check." << std::endl;
+            std::cout << "File " << fileName << " does not exist. Please check." << std::endl;
             //g_program_stop();
         }
         return false;
@@ -680,7 +672,7 @@ bool CCSVParser::GetValueByFieldName(string field_name, string& value, bool requ
     {
         if (required_field)
         {
-            dtalog.output() << "Field " << field_name << " in file " << mFileName << " does not exist. Please check the file." << std::endl;
+            std::cout<< "Field " << field_name << " in file " << mFileName << " does not exist. Please check the file." << std::endl;
             g_program_stop();
         }
         return false;

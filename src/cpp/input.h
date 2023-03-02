@@ -64,7 +64,7 @@ void g_detector_file_open_status()
 	fopen_ss(&g_pFilePathMOE, "final_summary.csv", "w");
 	if (!g_pFilePathMOE)
 	{
-		dtalog.output() << "File final_summary.csv cannot be opened." << endl;
+		cout<< "File final_summary.csv cannot be opened." << endl;
 		g_program_stop();
 	}
 	else
@@ -85,11 +85,11 @@ void g_read_input_data(Assignment& assignment)
 
 	//step 0:read demand period file
 	CCSVParser parser_demand_period;
-	dtalog.output() << "_____________" << endl;
-	dtalog.output() << "Step 1: Reading input data" << endl;
-	dtalog.output() << "_____________" << endl;
+	cout<< "_____________" << endl;
+	cout<< "Step 1: Reading input data" << endl;
+	cout<< "_____________" << endl;
 
-	dtalog.output() << "Step 1.1: Reading section [demand_period] in setting.csv..." << endl;
+	cout<< "Step 1.1: Reading section [demand_period] in setting.csv..." << endl;
 
 	parser_demand_period.IsFirstLineHeader = false;
 
@@ -101,7 +101,8 @@ void g_read_input_data(Assignment& assignment)
 
 	demand_period.demand_period_id = 1;
 	demand_period.demand_period = "AM";
-	global_minute_vector.push_back(7 * 60);
+	demand_period.default_plf = 1;
+	global_minute_vector.push_back(6 * 60);
 	global_minute_vector.push_back(9 * 60);
 
 	demand_period.starting_time_slot_no = global_minute_vector[0] / MIN_PER_TIMESLOT;  // read the data
@@ -114,8 +115,9 @@ void g_read_input_data(Assignment& assignment)
 	global_minute_vector.clear();
 	demand_period.demand_period_id = 2;
 	demand_period.demand_period = "MD";
-	global_minute_vector.push_back(10 * 60);
-	global_minute_vector.push_back(14 * 60);
+	demand_period.default_plf = 1;
+	global_minute_vector.push_back(9 * 60);
+	global_minute_vector.push_back(15 * 60);
 
 	demand_period.starting_time_slot_no = global_minute_vector[0] / MIN_PER_TIMESLOT;  // read the data
 	demand_period.ending_time_slot_no = global_minute_vector[1] / MIN_PER_TIMESLOT;    // read the data from setting.csv
@@ -127,8 +129,10 @@ void g_read_input_data(Assignment& assignment)
 	global_minute_vector.clear();
 	demand_period.demand_period_id = 2;
 	demand_period.demand_period = "PM";
+	demand_period.default_plf = 1;
 	global_minute_vector.push_back(15 * 60);
 	global_minute_vector.push_back(19 * 60);
+
 
 	demand_period.starting_time_slot_no = global_minute_vector[0] / MIN_PER_TIMESLOT;  // read the data
 	demand_period.ending_time_slot_no = global_minute_vector[1] / MIN_PER_TIMESLOT;    // read the data from setting.csv
@@ -137,11 +141,11 @@ void g_read_input_data(Assignment& assignment)
 	assignment.g_DemandPeriodVector.push_back(demand_period);
 
 
-	dtalog.output() << "_____________" << endl;
-	dtalog.output() << "Step 1: Reading input data" << endl;
-	dtalog.output() << "_____________" << endl;
+	cout<< "_____________" << endl;
+	cout<< "Step 1: Reading input data" << endl;
+	cout<< "_____________" << endl;
 
-	dtalog.output() << "number of link types = " << assignment.g_LinkTypeMap.size() << endl;
+	cout<< "number of link types = " << assignment.g_LinkTypeMap.size() << endl;
 
 	assignment.g_number_of_nodes = 0;
 	assignment.g_number_of_links = 0;  // initialize  the counter to 0
@@ -154,7 +158,7 @@ void g_read_input_data(Assignment& assignment)
 	
 	CCSVParser parser;
 
-	dtalog.output() << "Step 1.4: Reading node data in TMC_identification.csv..." << endl;
+	cout<< "Step 1.4: Reading node data in TMC_identification.csv..." << endl;
 	std::map<int, int> zone_id_to_analysis_district_id_mapping;
 
 		// master file: reading nodes
@@ -297,24 +301,24 @@ void g_read_input_data(Assignment& assignment)
 				}
 
 				if (assignment.g_number_of_nodes % 5000 == 0)
-					dtalog.output() << "reading " << assignment.g_number_of_nodes << " nodes.. " << endl;
+					cout<< "reading " << assignment.g_number_of_nodes << " nodes.. " << endl;
 			}
 
-			dtalog.output() << "number of nodes = " << assignment.g_number_of_nodes << endl;
+			cout<< "number of nodes = " << assignment.g_number_of_nodes << endl;
 
 			// fprintf(g_pFileOutputLog, "number of nodes =,%d\n", assignment.g_number_of_nodes);
 			parser.CloseCSVFile();
 		}
 		else
 		{
-			dtalog.output() << "file TMC_Identification.csv cannot be opened. Please check!" << endl;
+			cout<< "file TMC_Identification.csv cannot be opened. Please check!" << endl;
 			g_program_stop();
 		}
 
-	CCSVParser parser_link;
+		CCSVParser parser_link;
 
-	int link_type_warning_count = 0;
-	bool length_in_km_waring = false;
+		int link_type_warning_count = 0;
+		bool length_in_km_waring = false;
 
 
 		file_name = "TMC_Identification.csv";
@@ -365,31 +369,31 @@ void g_read_input_data(Assignment& assignment)
 				}
 
 
-				if (from_node_id ==-1 || from_node_id == -1)
+				if (from_node_id == -1 || from_node_id == -1)
 					continue;
 
 
 				string linkID;
-				parser_link.GetValueByFieldName("tmc", linkID,false);
+				parser_link.GetValueByFieldName("tmc", linkID, false);
 				// add the to node id into the outbound (adjacent) node list
 
 				if (assignment.g_node_id_to_seq_no_map.find(from_node_id) == assignment.g_node_id_to_seq_no_map.end())
 				{
 
-					dtalog.output() << "Error: from_node_id " << from_node_id << " in file TMC_Identification.csv is not defined in node.csv." << endl;
-				continue; //has not been defined
+					cout << "Error: from_node_id " << from_node_id << " in file TMC_Identification.csv is not defined in node.csv." << endl;
+					continue; //has not been defined
 				}
 
 				if (assignment.g_node_id_to_seq_no_map.find(to_node_id) == assignment.g_node_id_to_seq_no_map.end())
 				{
 
 
-					dtalog.output() << "Error: to_node_id " << to_node_id << " in file TMC_Identification.csv is not defined in node.csv." << endl;
+					cout << "Error: to_node_id " << to_node_id << " in file TMC_Identification.csv is not defined in node.csv." << endl;
 					continue; //has not been defined
 				}
 
 				//if (assignment.g_link_id_map.find(linkID) != assignment.g_link_id_map.end())
-				//    dtalog.output() << "Error: link_id " << linkID.c_str() << " has been defined more than once. Please check link.csv." << endl;
+				//    cout<< "Error: link_id " << linkID.c_str() << " has been defined more than once. Please check link.csv." << endl;
 
 				int internal_from_node_seq_no = assignment.g_node_id_to_seq_no_map[from_node_id];  // map external node number to internal node seq no.
 				int internal_to_node_seq_no = assignment.g_node_id_to_seq_no_map[to_node_id];
@@ -399,6 +403,7 @@ void g_read_input_data(Assignment& assignment)
 				link.link_seq_no = assignment.g_number_of_links;
 				link.to_node_seq_no = internal_to_node_seq_no;
 				link.link_id = linkID;
+				link.tmc_code = linkID;
 
 				assignment.g_link_id_map[link.link_id] = 1;
 
@@ -407,11 +412,22 @@ void g_read_input_data(Assignment& assignment)
 
 				parser_link.GetValueByFieldName("tmc", link.tmc_code, false);
 
+				if (link.tmc_code.size() == 0)
+				{
+
+				cout << "tmc in TMC_identification.csv is not defined." << endl;
+				return;
+				}
+
+				string road, direction;
+				parser_link.GetValueByFieldName("road", road, false);
+				parser_link.GetValueByFieldName("direction", direction, false);
+
 				link.tmc_road_sequence = 1;
+				link.tmc_corridor_name = road + "_" + direction;
 
-
-				parser_link.GetValueByFieldName("tmc_corridor_name", link.tmc_corridor_name, false);
-				parser_link.GetValueByFieldName("corridor_link_sequence", link.tmc_road_sequence,false);
+				parser_link.GetValueByFieldName("road", link.tmc_corridor_name, true);
+				parser_link.GetValueByFieldName("road_order", link.tmc_road_sequence,true);
 
 				if (g_tmc_corridor_vector.find(link.tmc_corridor_name) != g_tmc_corridor_vector.end())
 				{
@@ -507,19 +523,19 @@ void g_read_input_data(Assignment& assignment)
 				assignment.g_number_of_links++;
 
 				if (assignment.g_number_of_links % 10000 == 0)
-					dtalog.output() << "reading " << assignment.g_number_of_links << " links.. " << endl;
+					cout<< "reading " << assignment.g_number_of_links << " links.. " << endl;
 			}
 
 			parser_link.CloseCSVFile();
 
-			dtalog.output() << "number of links =" << g_link_vector.size() << endl;
+			cout<< "number of links =" << g_link_vector.size() << endl;
 		}
 
 		g_OutputModelFiles();
 
 	// we now know the number of links
 
-	dtalog.output() << "number of links =" << assignment.g_number_of_links << endl;
+	cout<< "number of links =" << assignment.g_number_of_links << endl;
 	
 	assignment.summary_file << "Step 1: read TMC_identification "<< endl;
 	assignment.summary_file << ",# of nodes = ," << g_node_vector.size() << endl;

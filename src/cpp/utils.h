@@ -179,7 +179,7 @@ bool CCSVParser::GetValueByFieldName(std::string field_name, T& value, bool requ
     {
         if (required_field)
         {
-            dtalog.output() << "Field " << field_name << " in file " << mFileName.c_str() << " does not exist. Please check the file." << std::endl;
+            cout<< "Field " << field_name << " in file " << mFileName.c_str() << " does not exist. Please check the file." << std::endl;
             g_program_stop();
         }
         return false;

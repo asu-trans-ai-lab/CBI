@@ -48,6 +48,7 @@ using std::ifstream;
 using std::ofstream;
 using std::istringstream;
 
+extern std::ofstream g_summary_file;
 class CTMC_Link
 {
 public:
@@ -129,7 +130,8 @@ public:
     }
 
 
-    float scan_congestion_duration(int peak_no, float starting_time_in_hour, float ending_time_in_hour, float outside_time_margin_in_hour, float assign_period_t2_peak_in_hour, float& FD_vcutoff, CLink* p_link,  /* input*/
+    float scan_congestion_duration(int peak_no, float starting_time_in_hour, float ending_time_in_hour, float outside_time_margin_in_hour,
+        float assign_period_t2_peak_in_hour, float& FD_vcutoff, CLink* p_link,  /* input*/
         float& obs_t0_in_hour, float& obs_t3_in_hour, float& obs_P_in_hour,
         float& V, float& peak_hour_volume, float&D, float& VOC_ratio, float& DOC_ratio,
         float& mean_speed_BPR, float &mean_speed_QVDF, float& highest_speed,  float& t2_speed,
@@ -166,7 +168,7 @@ public:
         float total_speed_value = 0;
         float total_speed_count = 0;
 
-        // step 1: record higest speed
+        // step 1: record highest speed
         for (int t_in_min = 6 * 60; t_in_min < 20 * 60; t_in_min += 5)
         {
 
@@ -194,7 +196,7 @@ public:
                 float volume = get_avg_volume(t_in_min,p_link,avg_speed, highest_speed);
                 V += volume / 12; // 12 5-min interval per hour
 
-//                cout << "time = " << t_in_min << "," << volume / 12 << ",V= " << V;
+                g_summary_file << "time in min = " << t_in_min << "," << "hour =," << t_in_min*1.0/60 << ",15-min volume=," << volume / 12 << ",cumulative volume=," << V << endl;
                 if (avg_speed < lowest_speed)
                 {
                     t_lowest_speed = t_in_min / 5;
@@ -225,12 +227,13 @@ public:
 
         }
 
+
         for (int t = t_mid + 1; t <= obs_te_in_interval; t += 1)  // move forward from mid t
         {
             if (avg_speed[t] < 1)
             {
                 int i_no_data = 1;
-                //                dtalog.output() << " Error: TMC_link " << p_link->tmc_code.c_str() << " has no data at timt t " << t << g_time_coding(t * 5).c_str() << endl;;
+                //                cout<< " Error: TMC_link " << p_link->tmc_code.c_str() << " has no data at timt t " << t << g_time_coding(t * 5).c_str() << endl;;
                 break;
             }
 
@@ -252,7 +255,7 @@ public:
             if (avg_speed[t] < 1)
             {
                 int i_no_data = 1;
-                //dtalog.output() << " Error: TMC link " << p_link->tmc_code.c_str() << " has no data at timt t =" << t * 5 << " min" << endl;;
+                //cout<< " Error: TMC link " << p_link->tmc_code.c_str() << " has no data at timt t =" << t * 5 << " min" << endl;;
                 break;
             }
             if (avg_speed[t] > FD_vcutoff)
@@ -304,7 +307,12 @@ public:
 
         mean_speed_BPR = total_speed_value / max(1.0f, total_speed_count);
 
-        plf = min(1,V/ max(1.0, L) /  max(1.0f, peak_hour_volume));
+        plf = V / max(1.0, L) / max(1.0f, peak_hour_volume);
+        plf = min(1, plf);  // under non-congested states
+
+        g_summary_file << "peak hour = " << peak_hour_t0_in_interval*5.0/60 << "->"<< peak_hour_t3_in_interval * 5.0 / 60 << endl;
+        g_summary_file << "peak hour based PLF = " << plf << "," << "V =," << V << ",peak_hour_volume=" << peak_hour_volume <<  endl;
+
         VOC_ratio = peak_hour_volume / max(1.0, p_link->lane_capacity);  // unit: demand: # of vehicles, lane_capacity # of vehicles per hours: dc ratio has a unit of hour, but it is different from P
 
         mean_speed_QVDF = FD_vcutoff;  
@@ -364,6 +372,9 @@ public:
             // test
             obs_P_in_hour = (obs_t3_in_hour - obs_t0_in_hour);  // congestion duration P
 
+            g_summary_file << "obs_t0_in_hour=, " << obs_t0_in_hour << endl;
+            g_summary_file << "obs_t3_in_hour=, " << obs_t3_in_hour << endl;
+
                 DOC_ratio = D / max(1.0, p_link->lane_capacity);  // unit: demand: # of vehicles, lane_capacity # of vehicles per hours: dc ratio has a unit of hour, but it is different from P
                 VOC_ratio = max(VOC_ratio, DOC_ratio);
 
@@ -376,7 +387,10 @@ public:
                 int idebug = 1;
             }
             // calibration
-            double exact_plf = V / max(1, L) / max(0.001, peak_hour_volume);
+            double exact_plf = V / max(1, L) / max(0.001, D); // under congested states, the denominator is congested demand D
+
+            g_summary_file << "congested demand based PLF = " << exact_plf << "," << "V =," << V << ",D=" << D << endl;
+
             double exact_bound = 1.0;
             plf = min(exact_bound, exact_plf);  // pure plf
 
@@ -721,13 +735,16 @@ bool Assignment::map_tmc_reading()
 
             if (measurement_tstamp.size() < 18)
             {
-                dtalog.output() << "reading data for measurement_tstamp = " << measurement_tstamp << ", length of string = " << length_of_measurement_tstamp << endl;
-                dtalog.output() << "Please use standard ISO 8601 date and time format 2022-05-23T22:00:23, length of string = 18" << endl;
+                cout<< "reading data for measurement_tstamp = " << measurement_tstamp << ", length of string = " << length_of_measurement_tstamp << endl;
+                cout<< "Please use standard ISO 8601 date and time format 2022-05-23T22:00:23, length of string = 18" << endl;
                 
                 g_program_stop();
             }
 
             global_time = g_measurement_tstamp_parser(measurement_tstamp, day_of_week_flag, day_of_year);
+
+
+            //TRACE("%s\n", measurement_tstamp.c_str());
 
             if (day_of_week_flag == 0 && day_of_week_flag == 6)
                 continue;
@@ -757,19 +774,19 @@ bool Assignment::map_tmc_reading()
 
             if (count % 100000 == 0)
             {
-                dtalog.output() << "reading " << count / 100000 << "00k TMC data items" << endl;
+                cout<< "reading " << count / 100000 << "00k TMC data items" << endl;
 
             }
             count++;
         }
         parser_measurement.CloseCSVFile();
 
-        dtalog.output() << "reading data for " << g_TMC_vector.size() << " TMC links." << endl;
+        cout<< "reading data for " << g_TMC_vector.size() << " TMC links." << endl;
         return true;
     }
     else
     {
-        dtalog.output() << "reading data with " << g_TMC_vector.size() << " TMC links." << endl;
+        cout<< "reading data with " << g_TMC_vector.size() << " TMC links." << endl;
         g_program_stop();
     }
 
@@ -790,7 +807,8 @@ void g_output_tmc_file()
         for (int tau = 0; tau < min((size_t)3, assignment.g_DemandPeriodVector.size()); tau++)
         {
 
-            fprintf(p_file_tmc_link, "%s_t0,%s_t3,%s_V,%s_peak_hour_volume,%s_D,%s_VC_ratio,%s_DC_ratio,%s_P,%s_vc/vt2-1,%s_vf_delay_index,%s_vc_delay_index,%s_speed_ph,%s_queue_speed,%s_vt2,%s_plf,%s_Q_n,%s_Q_cp,%s_Q_alpha,%s_Q_beta,%s_mV,%s_mD,%s_mDC_ratio,%s_mP,%s_mv_QVDF,%s_mvt2_QVDF,%s_m_mu_QVDF,%s_m_gamma_QVDF,%s_m_peak_hour_volume,%s_mVC_ratio,%s_mv_BPR,",
+            fprintf(p_file_tmc_link, "%s_horizon_length,%s_t0,%s_t3,%s_V,%s_peak_hour_volume,%s_D,%s_VC_ratio,%s_DC_ratio,%s_P,%s_vc/vt2-1,%s_vf_delay_index,%s_vc_delay_index,%s_speed_ph,%s_queue_speed,%s_vt2,%s_plf,%s_Q_n,%s_Q_cp,%s_Q_alpha,%s_Q_beta,%s_mV,%s_mD,%s_mDC_ratio,%s_mP,%s_mv_QVDF,%s_mvt2_QVDF,%s_m_mu_QVDF,%s_m_gamma_QVDF,%s_m_peak_hour_volume,%s_mVC_ratio,%s_mv_BPR,",
+               assignment.g_DemandPeriodVector[tau].demand_period.c_str(),
                assignment.g_DemandPeriodVector[tau].demand_period.c_str(),
                assignment.g_DemandPeriodVector[tau].demand_period.c_str(),
                assignment.g_DemandPeriodVector[tau].demand_period.c_str(),
@@ -1029,15 +1047,6 @@ void g_output_tmc_file()
                         analysis_hour_flag[hour] = 1;
 
 
-
-                    //float scan_congestion_duration(int peak_no, float starting_time_in_hour, float ending_time_in_hour
-                     // , float& FD_vcutoff, CLink * p_link,  /* input*/
-                     //    float& obs_t0_in_hour, float& obs_t3_in_hour, float& obs_P,
-                     //    float& V, float & peak_hour_volume, float& D, float& VOC_ratio,float& DOC_ratio,
-                     //    float& mean_speed_BPR, float& mean_speed_QVDF, float& highest_speed, float& t2_speed, 
-                     //float & plf, float &qdf )
-
-
                     float obs_t0_in_hour, obs_t3_in_hour, obs_P;
                     
                     obs_t0_in_hour = obs_t3_in_hour = obs_P = 0;
@@ -1087,7 +1096,11 @@ void g_output_tmc_file()
                     }
 
                         p_link->VDF_period[tau].sa_volume = V * p_link->number_of_lanes;  // make the data ready for sensitivity analysis
+                        
                         p_link->VDF_period[tau].peak_load_factor = plf;
+
+                        p_link->VDF_period[tau].peak_load_factor = assignment.g_DemandPeriodVector[tau].default_plf;
+
                         p_link->VDF_period[tau].v_congestion_cutoff = p_link->v_congestion_cutoff;
                         p_link->VDF_period[tau].v_congestion_cutoff = p_link->v_congestion_cutoff;
 
@@ -1102,6 +1115,8 @@ void g_output_tmc_file()
                     p_link->free_speed = highest_speed; // update or not, here is the question
                     p_link->VDF_period[tau].vf = highest_speed;
                     p_link->VDF_period[tau].v_congestion_cutoff = p_link->v_congestion_cutoff;
+
+
 
                     p_link->calculate_dynamic_VDFunction(0, false, p_link->vdf_type);
 
@@ -1163,7 +1178,8 @@ void g_output_tmc_file()
                         log_vcdi = log(queue_vc_delay_index);
                     }
                    // CBI
-                    fprintf(p_file_tmc_link, "%f,%f,%f,%f,%f,",
+                    fprintf(p_file_tmc_link, "%f,%f,%f,%f,%f,%f,",
+                        assign_period_end_time_in_hour - assign_period_start_time_in_hour,
                         obs_t0_in_hour, obs_t3_in_hour,  V, peak_hour_volume, D
                         );
                     fprintf(p_file_tmc_link, "%f,%f,%f,%f,%f,",
@@ -1315,7 +1331,7 @@ void g_output_tmc_file()
     }
     else
     {
-        dtalog.output() << "Error: File link_cbi_summary cannot be open." << endl;
+        cout<< "Error: File link_cbi_summary cannot be open." << endl;
         g_program_stop();
     }
 }
@@ -1510,7 +1526,7 @@ void g_output_qvdf_file()
     }
     else
     {
-        dtalog.output() << "Error: File link_qvdf cannot be open." << endl;
+        cout<< "Error: File link_qvdf cannot be open." << endl;
         g_program_stop();
 
     }
