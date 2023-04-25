@@ -510,6 +510,7 @@ public:
         RT_waiting_time{ 0 }, FT{ 1 }, AT{ 1 }, s3_m{ 4 }, tmc_road_order{ 0 }, tmc_road_sequence{ -1 }, k_critical{ 45 }, vdf_type{ q_vdf }, 
         tmc_corridor_id{ -1 }, from_node_id{ -1 }, to_node_id{ -1 }, kjam{ 300 }, link_distance_km{ 0 }, link_distance_mile{ 0 }, meso_link_id{ -1 }, total_simulated_delay_in_min{ 0 }, 
         total_simulated_meso_link_incoming_volume{ 0 }, global_minute_capacity_reduction_start{ -1 }, global_minute_capacity_reduction_end{ -1 },
+        TMC_highest_speed{ -1 },
         layer_no { 0 }
    {
    
@@ -615,7 +616,16 @@ public:
             }
         }
 
-        return total_speed_value / max(1, total_speed_count);
+        float model_speed = total_speed_value / max(1, total_speed_count);
+
+        if (model_speed > TMC_highest_speed)
+        {
+            cout << "TMC_highest_speed = " << TMC_highest_speed << endl;
+            TMC_highest_speed = model_speed;
+        }
+
+        return model_speed;
+
     }
 
 
@@ -721,7 +731,7 @@ public:
 
     }
 
-    double get_volume_from_speed(float speed, float free_speed_value, float lane_capacity)
+    double get_hourly_volume_from_speed(float speed, float free_speed_value, float lane_capacity)
     {
         //test data free_speed = 55.0f; 
         //speed = 52;

@@ -255,8 +255,7 @@ double network_assignment(int assignment_mode, int column_generation_iterations,
 			}
 
 		}
-		g_output_dynamic_queue_profile();
-
+	
 	
 
 	// at the end of simulation 
@@ -274,8 +273,6 @@ double network_assignment(int assignment_mode, int column_generation_iterations,
 		assignment.map_tmc_reading();  // read reading file
 		g_output_tmc_file();
 	}
-	//    g_output_dynamic_queue_profile();
-		//
 
 	cout<< "Output for assignment with " << assignment.g_number_of_column_generation_iterations << " iterations. Traffic assignment completes!" << endl;
 

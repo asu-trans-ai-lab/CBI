@@ -428,6 +428,8 @@ void g_read_input_data(Assignment& assignment)
 
 				parser_link.GetValueByFieldName("road", link.tmc_corridor_name, true);
 				parser_link.GetValueByFieldName("road_order", link.tmc_road_sequence,true);
+				double free_speed = 60.0;
+				parser_link.GetValueByFieldName("free_speed", free_speed, true);
 
 				if (g_tmc_corridor_vector.find(link.tmc_corridor_name) != g_tmc_corridor_vector.end())
 				{
@@ -439,7 +441,7 @@ void g_read_input_data(Assignment& assignment)
 				int link_type = 2;
 
 				double length = 1.0; // km or mile
-				double free_speed = 60.0;
+
 				double cutoff_speed = 1.0;
 				double k_jam = assignment.g_LinkTypeMap[link.link_type].k_jam;
 				double bwtt_speed = 12;  //miles per hour

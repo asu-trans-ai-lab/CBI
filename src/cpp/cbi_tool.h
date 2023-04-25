@@ -70,6 +70,8 @@ public:
             volume_count[t] = 0;
         }
 
+        m_highest_speed = -1;
+
     }
 
     ~CTMC_Link()
@@ -82,7 +84,7 @@ public:
     float volume_count[MAX_TIMEINTERVAL_PerDay];
 
 
-
+    float m_highest_speed; 
     float get_highest_speed()
     {
         float highest_speed = 0;
@@ -96,6 +98,7 @@ public:
                 highest_speed = avg_speed;
         }
 
+        m_highest_speed = highest_speed;
         return highest_speed;
     }
 
@@ -193,7 +196,7 @@ public:
             {
 
                 float avg_speed = record_avg_speed(t_in_min);
-                float volume = get_avg_volume(t_in_min,p_link,avg_speed, highest_speed);
+                float volume = get_avg_hourly_volume(t_in_min,p_link,avg_speed, highest_speed);
                 V += volume / 12; // 12 5-min interval per hour
 
                 g_summary_file << "time in min = " << t_in_min << "," << "hour =," << t_in_min*1.0/60 << ",15-min volume=," << volume / 12 << ",cumulative volume=," << V << endl;
@@ -292,12 +295,12 @@ public:
             if (avg_speed[t] >= 1)
             {
                 total_speed_value += avg_speed[t];
-                float volume = get_avg_volume(t, p_link, avg_speed[t], highest_speed);
+                float volume = get_avg_hourly_volume(t, p_link, avg_speed[t], highest_speed);
 
                 if (volume < 0)
                 {
                     int idebug = 1;
-                    get_avg_volume(t, p_link, avg_speed[t], highest_speed);
+                    get_avg_hourly_volume(t, p_link, avg_speed[t], highest_speed);
                 }
                 peak_hour_volume += volume / 12; // 12 5-min interval per hour
                 total_speed_count++;
@@ -356,7 +359,7 @@ public:
                 if (avg_speed[t] >= 1)
                 {
                     total_speed_value += avg_speed[t];
-                    float volume = get_avg_volume(t, p_link, avg_speed[t], highest_speed);
+                    float volume = get_avg_hourly_volume(t, p_link, avg_speed[t], highest_speed);
                     D += volume / 12; // 12 5-min interval per hour
                     total_speed_count++;
 
@@ -484,18 +487,24 @@ public:
     float get_avg_speed(int time_in_min)
     {
         int t = time_in_min / 5;
-        if (t >= 0 && t < MAX_TIMEINTERVAL_PerDay)
+
+        if(speed_count[t]  > 0)
         {
+            if (t >= 0 && t < MAX_TIMEINTERVAL_PerDay)
+            {
 
-            return speed_sum[t] / max(1.0f, speed_count[t]);
+                return speed_sum[t] / max(1.0f, speed_count[t]);
 
+            }
         }
-        return -1;
+
+        double speed = get_avg_speed_15min(time_in_min);
+        return speed;
     }
 
 
 
-    float get_avg_volume(int time_in_min, CLink* p_link, float avg_speed, float highest_speed)
+    float get_avg_hourly_volume(int time_in_min, CLink* p_link, float avg_speed, float highest_speed)
     {
         int t = time_in_min / 5;
             
@@ -507,7 +516,7 @@ public:
         }
         else  // default 
         {
-            return p_link->get_volume_from_speed(avg_speed, highest_speed, p_link->lane_capacity);
+            return p_link->get_hourly_volume_from_speed(avg_speed, highest_speed, p_link->lane_capacity);
         }
 
     }
@@ -521,14 +530,21 @@ public:
         for (int tt = 0; tt < 3; tt++)
         {
 
-            if (t + tt >= 0 && t + tt < MAX_TIMEINTERVAL_PerDay)
+            if (t + tt >= 0 && t + tt < MAX_TIMEINTERVAL_PerDay  && speed_count[t + tt] >=1)
             {
                 total_speed_value += speed_sum[t + tt] / max(1.0f, speed_count[t + tt]);
                 total_speed_count++;
             }
         }
 
+        if(total_speed_count >=1)
+        {
         return total_speed_value / max(1, total_speed_count);
+        }
+        else
+        {
+            return m_highest_speed;
+        }
 
     }
 
@@ -542,7 +558,7 @@ public:
         for (int tt = 0; tt < 12; tt++)
         {
 
-            if (t + tt >= 0 && t + tt < MAX_TIMEINTERVAL_PerDay)
+            if (t + tt >= 0 && t + tt < MAX_TIMEINTERVAL_PerDay && speed_count[t + tt]>0)
             {
                 total_speed_value += speed_sum[t + tt] / max(1.0f, speed_count[t + tt]);
                 total_speed_count++;
@@ -564,12 +580,15 @@ public:
         for (int tt = 0; tt < 12; tt++)
         {
 
-            if (t + tt >= 0 && t + tt < MAX_TIMEINTERVAL_PerDay)
+            if (t + tt >= 0 && t + tt < MAX_TIMEINTERVAL_PerDay && volume_count[t + tt] >0)
             {
                 total_volume_value += volume_sum[t + tt] / max(1.0f, volume_count[t + tt]);
                 total_volume_count++;
             }
         }
+
+
+
 
         return total_volume_value;
     }
@@ -851,14 +870,14 @@ void g_output_tmc_file()
 
         fprintf(p_file_tmc_link, "geometry, tmc_geometry,");
 
-        for (int t = 6 * 60; t < 20 * 60; t += 60)
+        for (int t = 0 * 60; t < 24 * 60; t += 60)
         {
             int hour = t / 60;
             int minute = t - hour * 60;
             fprintf(p_file_tmc_link, "vh%02d,", hour);
         }
 
-        for (int t = 6 * 60; t < 20 * 60; t += 60)
+        for (int t = 0 * 60; t < 24 * 60; t += 60)
         {
             int hour = t / 60;
             int minute = t - hour * 60;
@@ -867,14 +886,14 @@ void g_output_tmc_file()
 
         fprintf(p_file_tmc_link, "evhMAE,evhMAPE,evhRMSE,");
 
-        for (int t = 6 * 60; t < 20 * 60; t += 60)
+        for (int t = 0 * 60; t < 24 * 60; t += 60)
         {
             int hour = t / 60;
             int minute = t - hour * 60;
             fprintf(p_file_tmc_link, "qh%02d,", hour);
         }
 
-        for (int t = 6 * 60; t < 20 * 60; t += 60)
+        for (int t = 0 * 60; t < 24 * 60; t += 60)
         {
             int hour = t / 60;
             int minute = t - hour * 60;
@@ -1234,14 +1253,19 @@ void g_output_tmc_file()
                         double RMSE_total = 0;
 
 
-                        for (int t = 6 * 60; t < 20 * 60; t += 60)
+                        for (int t = 0 * 60; t < 24 * 60; t += 60)
                         {
                             int hour = t / 60;
+                            if (hour == 19)
+                            {
+                                int iii = 1;
+                            }
                             ObsSpeed[hour] = g_TMC_vector[tmc_index].get_avg_hourly_speed(t);
+
                             fprintf(p_file_tmc_link, "%.1f,", ObsSpeed[hour]);
                         }
 
-                        for (int t = 6 * 60; t < 20 * 60; t += 60)
+                        for (int t = 0 * 60; t < 24 * 60; t += 60)
                         {
                             double model_speed = g_link_vector[i].get_model_hourly_speed(t);
                             fprintf(p_file_tmc_link, "%.1f,", model_speed);
@@ -1265,13 +1289,21 @@ void g_output_tmc_file()
 
                         fprintf(p_file_tmc_link, "%.2f,%.2f,%.2f,", MAE_total / max(1, count_total), MAPE_total / max(1, count_total) * 100, pow(MSE_total, 0.5));
 
-                        for (int t = 6 * 60; t < 20 * 60; t += 60)
+                        for (int t = 0 * 60; t < 24 * 60; t += 60)
                         {
                             int hour = t / 60;
                             float volume = g_TMC_vector[tmc_index].get_avg_hourly_volume(t);
+
+
+                            if (volume <= 1)
+                            {
+                                // default to approximate volume
+                                float speed = g_TMC_vector[tmc_index].get_avg_speed(t);
+                                volume = g_TMC_vector[tmc_index].get_avg_hourly_volume(t, &(g_link_vector[i]), speed, g_link_vector[i].TMC_highest_speed);
+                            }
                             fprintf(p_file_tmc_link, "%.1f,", volume);
                         }
-                        for (int t = 6 * 60; t < 20 * 60; t += 60)
+                        for (int t = 0 * 60; t < 24 * 60; t += 60)
                         {
                             int hour = t / 60;
                             ObsSpeed[hour] = g_TMC_vector[tmc_index].get_avg_hourly_speed(t);
@@ -1313,8 +1345,8 @@ void g_output_tmc_file()
                         for (int t = 6 * 60; t < 20 * 60; t += 5)
                         {
                             float speed = g_TMC_vector[tmc_index].get_avg_speed(t);
-                            double volume = g_TMC_vector[tmc_index].get_avg_volume(t, &(g_link_vector[i]), speed, g_link_vector[i].TMC_highest_speed);
-                            volume = volume * 12;  // compute hourly volume
+                            double volume = g_TMC_vector[tmc_index].get_avg_hourly_volume(t, &(g_link_vector[i]), speed, g_link_vector[i].TMC_highest_speed);
+                            volume = volume / 12;  // convert from hourly volume to 5 min volume
                             fprintf(p_file_tmc_link, "%.2f,", volume);
                         }
 
