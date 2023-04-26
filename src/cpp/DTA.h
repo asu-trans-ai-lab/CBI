@@ -741,7 +741,7 @@ public:
             speed = free_speed_value * 0.99;
 
         if (speed < 0)
-            return -1;
+            return 1;
 
         k_critical = 45;  // 45 vehicles per mile per lane based on HCM
         v_critical = lane_capacity / k_critical;

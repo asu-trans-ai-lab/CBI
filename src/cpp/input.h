@@ -131,7 +131,7 @@ void g_read_input_data(Assignment& assignment)
 	demand_period.demand_period = "PM";
 	demand_period.default_plf = 1;
 	global_minute_vector.push_back(15 * 60);
-	global_minute_vector.push_back(19 * 60);
+	global_minute_vector.push_back(18 * 60);
 
 
 	demand_period.starting_time_slot_no = global_minute_vector[0] / MIN_PER_TIMESLOT;  // read the data

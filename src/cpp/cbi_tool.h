@@ -900,7 +900,7 @@ void g_output_tmc_file()
             fprintf(p_file_tmc_link, "vhr%02d,", hour);
         }
 
-        for (int t = 6 * 60; t < 20 * 60; t += 5)
+        for (int t = 0 * 60; t < 24 * 60; t += 5)
         {
             int hour = t / 60;
             int minute = t - hour * 60;
@@ -908,35 +908,37 @@ void g_output_tmc_file()
             fprintf(p_file_tmc_link, "v%02d:%02d,", hour, minute);
         }
 
-        for (int t = 6 * 60; t < 20 * 60; t += 5)
-        {
-            int hour = t / 60;
-            int minute = t - hour * 60;
-
-            fprintf(p_file_tmc_link, "mv%02d:%02d,", hour, minute);
-        }
-
-        for (int t = 6 * 60; t < 20 * 60; t += 15)
-        {
-            int hour = t / 60;
-            int minute = t - hour * 60;
-
-            fprintf(p_file_tmc_link, "v%02d:%02d,", hour, minute);
-        }
-        for (int t = 6 * 60; t < 20 * 60; t += 15)
-        {
-            int hour = t / 60;
-            int minute = t - hour * 60;
-
-            fprintf(p_file_tmc_link, "mv%02d:%02d,", hour, minute);
-        }
-        for (int t = 6 * 60; t < 20 * 60; t += 5)
+        for (int t = 0 * 60; t < 24 * 60; t += 5)
         {
             int hour = t / 60;
             int minute = t - hour * 60;
 
             fprintf(p_file_tmc_link, "q%02d:%02d,", hour, minute);
         }
+
+        for (int t = 6 * 60; t < 20 * 60; t += 5)
+        {
+            int hour = t / 60;
+            int minute = t - hour * 60;
+
+            fprintf(p_file_tmc_link, "mv%02d:%02d,", hour, minute);
+        }
+
+        for (int t = 6 * 60; t < 20 * 60; t += 15)
+        {
+            int hour = t / 60;
+            int minute = t - hour * 60;
+
+            fprintf(p_file_tmc_link, "v%02d:%02d,", hour, minute);
+        }
+        for (int t = 6 * 60; t < 20 * 60; t += 15)
+        {
+            int hour = t / 60;
+            int minute = t - hour * 60;
+
+            fprintf(p_file_tmc_link, "mv%02d:%02d,", hour, minute);
+        }
+
 
 
 
@@ -1315,10 +1317,17 @@ void g_output_tmc_file()
                             fprintf(p_file_tmc_link, "%.3f,", speed_ratio);
                         }
 
-                        for (int t = 6 * 60; t < 20 * 60; t += 5)
-                        {
+                        for (int t = 0 * 60; t < 24 * 60; t += 5)                        {
 
                             fprintf(p_file_tmc_link, "%.1f,", g_TMC_vector[tmc_index].get_avg_speed(t));
+                        }
+
+                        for (int t = 0 * 60; t < 24 * 60; t += 5)
+                        {
+                            float speed = g_TMC_vector[tmc_index].get_avg_speed(t);
+                            double volume = g_TMC_vector[tmc_index].get_avg_hourly_volume(t, &(g_link_vector[i]), speed, g_link_vector[i].TMC_highest_speed);
+                            volume = volume / 12;  // convert from hourly volume to 5 min volume
+                            fprintf(p_file_tmc_link, "%.2f,", volume);
                         }
 
                         // model speed
@@ -1342,13 +1351,6 @@ void g_output_tmc_file()
                             fprintf(p_file_tmc_link, "%.1f,", model_speed);
                         }
 
-                        for (int t = 6 * 60; t < 20 * 60; t += 5)
-                        {
-                            float speed = g_TMC_vector[tmc_index].get_avg_speed(t);
-                            double volume = g_TMC_vector[tmc_index].get_avg_hourly_volume(t, &(g_link_vector[i]), speed, g_link_vector[i].TMC_highest_speed);
-                            volume = volume / 12;  // convert from hourly volume to 5 min volume
-                            fprintf(p_file_tmc_link, "%.2f,", volume);
-                        }
 
 
                     }
